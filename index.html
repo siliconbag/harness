@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Харнес вокруг модели</title>
+<meta name="description" content="Материалы доклада Артема Субботина «Платформы для совместной работы с ИИ-агентами». Что такое харнес, где его взять, как сменить модель за несколько минут и с чего начать.">
+<meta property="og:title" content="Платформы для совместной работы с ИИ-агентами">
+<meta property="og:description" content="Материалы доклада Артема Субботина. Харнес, сменная модель, задачи для слабой модели и пилот за две недели.">
+<meta property="og:type" content="article">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400..800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FFFFFF;--ink:#111111;--body:#444444;--muted:#666666;--rule:#DDDDDD;--tone:#EFEFEF;--red:#D71F26;--on-red:#FFFFFF}
+@media (prefers-color-scheme:dark){:root{--bg:#111111;--ink:#FFFFFF;--body:#CCCCCC;--muted:#999999;--rule:#333333;--tone:#1C1C1C;--red:#FF4D3D;--on-red:#111111}}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--body);font:18px/1.55 Onest,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+a{color:var(--ink);text-decoration-color:var(--red);text-decoration-thickness:2px;text-underline-offset:3px}
+a:hover{color:var(--red)}
+.wrap{max-width:780px;margin:0 auto;padding:0 20px}
+.mono{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
+.eyebrow{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
+header{padding:56px 0 40px}
+h1{color:var(--ink);font-size:clamp(32px,6vw,52px);line-height:1.08;font-weight:800;letter-spacing:-.02em;margin:14px 0 18px}
+.lead{font-size:20px;color:var(--body);max-width:640px}
+.by{margin-top:22px;font-size:16px;color:var(--muted)}
+.by b{color:var(--ink);font-weight:700}
+.idea{border-top:4px solid var(--red);padding:20px 0 0;margin:8px 0 40px}
+.idea p{color:var(--ink);font-size:clamp(22px,3.6vw,28px);line-height:1.3;font-weight:700}
+.idea p+p{font-size:18px;font-weight:400;color:var(--body);margin-top:10px;line-height:1.5}
+nav{border-top:2px solid var(--ink);padding:18px 0 8px}
+nav ol{list-style:none;columns:2;column-gap:28px}
+nav li{break-inside:avoid;padding:5px 0;font-size:16px}
+nav li span{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--red);font-size:13px;margin-right:8px}
+nav a{text-decoration:none;color:var(--ink)}
+section{padding:52px 0 8px;border-top:1px solid var(--rule);margin-top:44px}
+h2{color:var(--ink);font-size:clamp(26px,4.4vw,36px);line-height:1.12;font-weight:700;letter-spacing:-.01em;margin:10px 0 18px}
+h3{color:var(--ink);font-size:19px;line-height:1.3;font-weight:700;margin-bottom:6px}
+p+p,p+ul,ul+p,p+ol,ol+p,.grid+p,p+.grid,.flow+p,p+.callout,.callout+p{margin-top:14px}
+ul.dots{list-style:none}
+ul.dots li{position:relative;padding-left:18px;margin:6px 0}
+ul.dots li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;background:var(--red)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.card{border-top:3px solid var(--ink);padding:14px 0 6px}
+.card.hot{border-top-color:var(--red)}
+.card .eyebrow{display:block;margin-bottom:6px}
+.card p{font-size:16px}
+.flow{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin-top:18px}
+.step{flex:1 1 130px;background:var(--tone);border-radius:14px;padding:14px}
+.step b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px}
+.step small{font-size:14px;color:var(--muted);line-height:1.4;display:block}
+.step.red{background:var(--red)}
+.step.red b,.step.red small{color:var(--on-red)}
+.bar{margin-top:10px;background:var(--ink);color:var(--bg);border-radius:14px;padding:14px 18px;font-size:16px}
+.bar b{color:var(--bg)}
+.chain{list-style:none;counter-reset:c;margin-top:18px}
+.chain li{display:flex;gap:14px;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--rule)}
+.chain li::before{counter-increment:c;content:counter(c,decimal-leading-zero);font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--red);font-size:14px;font-weight:600;min-width:24px}
+.chain b{color:var(--ink)}
+.callout{background:var(--tone);border-radius:14px;padding:18px 20px;color:var(--ink);font-weight:600}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+.stat b{display:block;color:var(--red);font-size:clamp(36px,7vw,52px);line-height:1;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+.stat p{font-size:16px}
+.num{list-style:none;counter-reset:n;margin-top:18px}
+.num>li{position:relative;padding:14px 0 14px 46px;border-bottom:1px solid var(--rule)}
+.num>li::before{counter-increment:n;content:counter(n,decimal-leading-zero);position:absolute;left:0;top:15px;font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--red);font-weight:600;font-size:15px}
+.num p{font-size:16px}
+.task p{font-size:16px}
+.task .who{color:var(--muted);font-size:15px;margin-top:4px}
+dl.terms{margin-top:16px}
+dl.terms dt{color:var(--ink);font-weight:700;margin-top:10px}
+dl.terms dd{font-size:16px}
+.days{list-style:none;margin-top:18px}
+.days li{display:grid;grid-template-columns:96px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--rule)}
+.days li span{font-family:"JetBrains Mono",ui-monospace,monospace;color:var(--red);font-size:14px;font-weight:600;padding-top:2px}
+.links{list-style:none;margin-top:16px}
+.links li{padding:10px 0;border-bottom:1px solid var(--rule)}
+.links small{display:block;color:var(--muted);font-size:14px}
+footer{margin-top:64px;padding:36px 0 56px;border-top:2px solid var(--ink)}
+footer p{font-size:16px}
+footer .tg{font-size:clamp(26px,5vw,34px);font-weight:800;letter-spacing:-.01em;margin:8px 0 10px;display:inline-block}
+@media (max-width:620px){
+ body{font-size:17px}
+ header{padding:36px 0 28px}
+ nav ol{columns:1}
+ .grid,.stats{grid-template-columns:1fr}
+ .step{flex-basis:100%}
+ .days li{grid-template-columns:78px 1fr}
+ section{padding-top:40px;margin-top:32px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+<p class="eyebrow">Материалы доклада · 6 ноября 2026</p>
+<h1>Платформы для совместной работы с ИИ-агентами</h1>
+<p class="lead">Как собрать рабочий контур без зависимости от самых мощных закрытых моделей. Здесь все из доклада и то, что не поместилось в двадцать минут.</p>
+<p class="by"><b>Артем Субботин</b>, предприниматель, эксперт по прикладному ИИ. Доклад на I отраслевом митапе по ИИ-трансформации ДИТ Москвы.</p>
+</header>
+
+<div class="idea">
+<p>Не ждите самую умную модель. Соберите харнес, в котором справится та модель, что у вас уже есть.</p>
+<p>Тогда при любой блокировке или смене цен переключиться на другую модель можно за несколько минут.</p>
+</div>
+
+<nav aria-label="Содержание">
+<ol>
+<li><span>01</span><a href="#harness">Что такое харнес</a></li>
+<li><span>02</span><a href="#kinds">Какие бывают харнесы</a></li>
+<li><span>03</span><a href="#bb">BB</a></li>
+<li><span>04</span><a href="#cases">Примеры из практики</a></li>
+<li><span>05</span><a href="#fallback">Сменная модель</a></li>
+<li><span>06</span><a href="#inside">Все внутри организации</a></li>
+<li><span>07</span><a href="#weak">Когда хватает слабой модели</a></li>
+<li><span>08</span><a href="#tricks">Шесть приемов для слабой модели</a></li>
+<li><span>09</span><a href="#rules">Четыре правила перед запуском</a></li>
+<li><span>10</span><a href="#tasks">Шесть задач, с которых начать</a></li>
+<li><span>11</span><a href="#pilot">Пилот за две недели</a></li>
+<li><span>12</span><a href="#links">Записи эфиров и ссылки</a></li>
+</ol>
+</nav>
+
+<section id="harness">
+<p class="eyebrow">01</p>
+<h2>Что такое харнес</h2>
+<p>Модель это толковый стажер в первый день. Умный, быстро читает и пишет, но не знает ваших регламентов, у него нет доступов, и он не понимает, у кого что спросить. Сотрудником его делает не ум, а то, что вокруг. Должностная инструкция, доступ к нужным папкам, список задач, журнал и руководитель, который подписывает важное.</p>
+<p>Все это вместе называют харнесом, от английского harness, упряжь. Модель тянет, упряжь направляет.</p>
+<div class="flow" role="list">
+<div class="step" role="listitem"><b>Список задач</b><small>откуда берется работа</small></div>
+<div class="step" role="listitem"><b>Знания</b><small>регламенты, документы, прошлые решения</small></div>
+<div class="step red" role="listitem"><b>Модель</b><small>выполняет работу</small></div>
+<div class="step" role="listitem"><b>Журнал</b><small>что сделано и почему</small></div>
+<div class="step" role="listitem"><b>Решение за человеком</b><small>важное утверждает сотрудник</small></div>
+</div>
+<p class="bar"><b>Доступы.</b> Модель видит и трогает только то, что ей разрешили в настройках. Читать документы можно, отправлять письма наружу нельзя.</p>
+<p>Модель в харнесе можно поменять, а все остальное останется настроенным под вашу работу. Модель вы берете в аренду, а харнес остается вашим.</p>
+<p class="callout">Модель это повар, харнес это кухня. В сетевом кафе бургер одинаковый, кто бы ни стоял у гриля, потому что есть техкарта, заготовки и порядок. Повар заболел, вышел другой, и кафе работает дальше.</p>
+</section>
+
+<section id="kinds">
+<p class="eyebrow">02</p>
+<h2>Какие бывают харнесы</h2>
+<p>Модель вместе с харнесом, которая сама выполняет задачи, называют ИИ-агентом. Готовые харнесы бывают четырех видов, от простого к гибкому.</p>
+<div class="grid">
+<div class="card"><span class="eyebrow">Вид 1</span><h3>Агент на компьютере</h3><p>Модель с доступом к файлам и программам. Не только отвечает, а сама открывает документы, правит их и проверяет результат. Такие есть у всех крупных разработчиков ИИ.</p></div>
+<div class="card"><span class="eyebrow">Вид 2</span><h3>Платформа для команды</h3><p>Доска задач, роли, бюджеты и согласования, как в отделе. Например, <a href="https://github.com/paperclipai/paperclip">Paperclip</a> или <a href="https://github.com/multica-ai/multica">Мультика</a>.</p></div>
+<div class="card hot"><span class="eyebrow">Вид 3</span><h3>Своя сборка</h3><p>Набор деталей, из которых собираешь рабочее место под себя. Например, <a href="https://github.com/get-bb/bb">BB</a>.</p></div>
+<div class="card"><span class="eyebrow">Вид 4</span><h3>Свой код</h3><p>Разработчик пишет харнес сам под конкретную задачу. Дольше, зато все под контролем.</p></div>
+</div>
+<p>Для первого знакомства хватит агента на компьютере. Для команды стоит смотреть на платформы. Если нужна гибкость и все у себя, на сборки вроде BB.</p>
+</section>
+
+<section id="bb">
+<p class="eyebrow">03</p>
+<h2>BB, харнес, который собираешь под себя</h2>
+<p>Бесплатный инструмент с открытым кодом, лицензия MIT, адрес <a href="https://github.com/get-bb/bb" class="mono">github.com/get-bb/bb</a>. Ставится на ваш компьютер или сервер. Своей модели внутри нет, BB подключает агентов и модели, которые у вас уже есть, зарубежные, отечественные или локальные.</p>
+<dl class="terms">
+<dt>Проекты</dt><dd>папки работы, у каждой свои инструкции</dd>
+<dt>Треды</dt><dd>разговоры с агентом, они сохраняются целиком, и видно каждый шаг</dd>
+<dt>Машины</dt><dd>компьютеры, где агент работает, у каждой свои права</dd>
+<dt>Плагины</dt><dd>новые экраны и кнопки, агент пишет их сам по просьбе обычным языком</dd>
+</dl>
+<p>BB можно настроить как диспетчера. Старшая модель принимает большую задачу, делит ее на части, помечает каждую как сложную, среднюю или простую и раздает исполнителям по силам. Простое уходит дешевой модели, сложное сильной, а старшая следит за статусами и возвращает на доработку.</p>
+<p>Честно о минусах. Версия ранняя, развивают ее несколько человек, обновления иногда ломают привычное. У BB есть удаленный доступ через сайт разработчиков, для рабочих данных его лучше не включать и настроить свой вход. Из BB стоит брать подход, а инструмент выбирать под свою задачу.</p>
+</section>
+
+<section id="cases">
+<p class="eyebrow">04</p>
+<h2>Три примера из практики</h2>
+<div class="grid">
+<div class="card"><span class="eyebrow">Малый бизнес</span><h3>Садовая компания</h3>
+<ul class="dots"><li>Агент планирует выезды бригад с учетом погоды и расписания</li><li>Проверяет работу по фото от бригад, готовит счета и отчетность</li><li>Управление бизнесом занимает около двух часов в день вместо целого</li></ul></div>
+<div class="card"><span class="eyebrow">Студия разработки</span><h3>Сайты и сервисы на заказ</h3>
+<ul class="dots"><li>Руководитель получает короткую сводку по всем проектам</li><li>Агент следит, что сайты клиентов работают</li><li>Большую задачу агент сам делит на части и раздает другим агентам</li></ul></div>
+<div class="card hot"><span class="eyebrow">Медиа про ИИ</span><h3>Подбор тем и присмотр за серверами</h3>
+<ul class="dots"><li>Каждое утро агент собирает свежие материалы и присылает подборку</li><li>Каждые 30 минут скрипт проверяет серверы и пишет, только если что-то сломалось</li><li>Модель меняется одной строчкой в настройке</li></ul></div>
+</div>
+<p>Ни в одном примере нет магии. Везде повторяющаяся работа, понятный порядок и человек в конце цепочки, и ни в одном успех не зависит от того, какая модель внутри.</p>
+</section>
+
+<section id="fallback">
+<p class="eyebrow">05</p>
+<h2>Модель отключили, работу доделает другая</h2>
+<ol class="chain">
+<li><span><b>Claude.</b> Отключили за одну ночь.</span></li>
+<li><span><b>ChatGPT.</b> Доделает почти так же.</span></li>
+<li><span><b>DeepSeek или Kimi.</b> Со скрипом, но доделает.</span></li>
+<li><span><b>Модель на вашем сервере.</b> Ее никто не отключит.</span></li>
+</ol>
+<p>Список задач, инструкции, данные и журнал при этом не меняются, переключение занимает несколько минут. Практик из крупного финтех-интегратора держит у каждого агента основную модель и цепочку из 10-15 запасных. Модель не ответила, система сама берет следующую.</p>
+<p>Чтобы понять, справляется ли новая модель, держите эталонный набор. Это 20-30 настоящих примеров с правильными ответами, например прошлые письма и одобренные ответы на них. Прогнали новую модель и сразу видно, где она ошибается. Тогда смена модели это решение на полчаса, а не проект на квартал.</p>
+<p class="callout">Проверка на прочность. Поменяли модель в пятницу, в понедельник все работает. Если нет, это не система, а привычка к одной модели.</p>
+</section>
+
+<section id="inside">
+<p class="eyebrow">06</p>
+<h2>Все работает внутри вашей организации</h2>
+<p>Модель можно запустить на своем сервере, тогда она работает без отправки данных в интернет. Такие модели называют локальными. BB ставится туда же, а данные, документы и журнал остаются внутри.</p>
+<div class="flow" role="list">
+<div class="step red" role="listitem"><b>Модель</b><small>запущена на вашем сервере</small></div>
+<div class="step" role="listitem"><b>BB</b><small>задачи, инструкции и доступы</small></div>
+<div class="step" role="listitem"><b>Данные</b><small>регламенты, документы, справочники</small></div>
+<div class="step" role="listitem"><b>Журнал</b><small>каждый шаг остается внутри</small></div>
+</div>
+<p class="bar"><b>Два правила.</b> Документы и данные не покидают организацию. Доступ только у своих сотрудников, по логину и паролю.</p>
+<h3 style="margin-top:26px">Какие модели можно поставить у себя</h3>
+<ul class="dots">
+<li><a href="https://habr.com/ru/articles/1014478">GigaChat 3.1</a> от Сбера с открытыми весами под MIT. Компактная версия Lightning рассчитана на запуск у себя.</li>
+<li><a href="https://kod.ru/yandexgpt-open-source-new-models">YandexGPT 5 Lite</a> на 8 млрд параметров, идет даже на обычном компьютере. Лицензия своя, условия стоит проверить под ваш случай.</li>
+<li>Зарубежные открытые модели, например Qwen и DeepSeek.</li>
+</ul>
+<p>Для запуска нужны сервер с видеокартой и человек из ИТ, который один раз все поставит. Компактным моделям на 8-10 млрд параметров хватает одной видеокарты, крупным нужен кластер.</p>
+<p>Если без внешней модели не обойтись, перед отправкой задачу проверяет отдельный фильтр. Есть в ней чувствительные данные, задача остается во внутренней модели. Нет, ее можно отдать наружу.</p>
+</section>
+
+<section id="weak">
+<p class="eyebrow">07</p>
+<h2>Когда хватает слабой модели, а когда нужна сильная</h2>
+<div class="grid">
+<div class="card"><h3>Хватает слабой</h3><ul class="dots"><li>Задача простая и идет по одному алгоритму, например разобрать почту или собрать данные</li><li>Решение принимает человек, а не модель</li><li>Ответ можно проверить по образцу</li></ul></div>
+<div class="card hot"><h3>Нужна сильная</h3><ul class="dots"><li>Новая задача без образца</li><li>Длинное рассуждение и выбор стратегии</li><li>Сборка самого харнеса, инструкции и плагины</li></ul></div>
+</div>
+<p>Сборка делается один раз. Сильная модель пишет техкарту, обычный повар каждый день по ней готовит.</p>
+<div class="stats">
+<div class="stat"><b>70-80%</b><p>задач агента один разработчик закрывает моделью на своем компьютере, остальное отдает облачной</p></div>
+<div class="stat"><b>4 месяца</b><p>на столько лучшие открытые модели отстают от лучших закрытых по замеру <a href="https://epoch.ai/data-insights/open-closed-eci-gap">Epoch AI</a> 2026 года</p></div>
+</div>
+</section>
+
+<section id="tricks">
+<p class="eyebrow">08</p>
+<h2>Как харнес вытягивает слабую модель</h2>
+<ol class="num">
+<li><h3>Режем задачу</h3><p>Вместо «проверь документ» двадцать вопросов из чек-листа с ответом да или нет. Указан ли срок, есть ли подписи сторон, совпадает ли сумма в тексте и в приложении.</p></li>
+<li><h3>Закрываем ответ</h3><p>Модель выбирает из списка или заполняет форму с полями. Программа проверяет формат и отправляет кривой ответ на повтор.</p></li>
+<li><h3>Подаем контекст готовым</h3><p>Нужные пункты регламента находит поиск. Модель не вспоминает, а читает.</p></li>
+<li><h3>Считает код</h3><p>Цифры и даты считает скрипт, модель только пересказывает результат.</p></li>
+<li><h3>Сортировщик впереди</h3><p>Дешевая модель раскладывает поток, сложное уходит человеку или модели посильнее.</p></li>
+<li><h3>Без модели, где можно</h3><p>Проверки по расписанию это обычный скрипт, ему не нужны ни токены, ни интернет.</p></li>
+</ol>
+<p>Инструкция объясняет модели, чего от нее хотят, а проверка устанавливает, сделано ли. Масштабировать процесс без проверок значит масштабировать его ошибки.</p>
+</section>
+
+<section id="rules">
+<p class="eyebrow">09</p>
+<h2>Четыре правила перед запуском агента</h2>
+<ol class="num">
+<li><h3>Сначала описать работу, потом звать агента</h3><p>Кривой процесс агент не исправит, а просто сделает быстрее.</p></li>
+<li><h3>Закрыть отправку наружу в настройках</h3><p>Агент может сам решить кому-то написать. Однажды агент вспомнил старую просьбу предупреждать коллег об обновлении системы и написал в самый многолюдный рабочий чат. Просьба в тексте инструкции не спасает, спасает запрет в настройках. Пароли и ключи агенту в текст не пишут, он берет ключ по имени из хранилища.</p></li>
+<li><h3>Требовать ежедневный отчет</h3><p>Бывает, что агент молча перестает работать. Нет утреннего отчета, значит что-то сломалось, и вы узнаете об этом на следующий день, а не через месяц.</p></li>
+<li><h3>Назначить ответственного сотрудника</h3><p>У каждого агента есть человек, который отвечает за его работу, как за работу подчиненного.</p></li>
+</ol>
+</section>
+
+<section id="tasks">
+<p class="eyebrow">10</p>
+<h2>Шесть задач, где хватит слабой модели</h2>
+<div class="grid">
+<div class="card task"><h3>Протокол совещания</h3><p>Модель по записи встречи пишет решения, сроки и ответственных.</p><p class="who">Человек проверяет и рассылает</p></div>
+<div class="card task"><h3>Ответ на обращение</h3><p>Модель готовит черновик по регламенту со ссылкой на пункт.</p><p class="who">Человек правит и подписывает</p></div>
+<div class="card task"><h3>Разбор почты</h3><p>Модель раскладывает письма по темам и исполнителям.</p><p class="who">Человек смотрит только спорные</p></div>
+<div class="card task"><h3>Проверка документа</h3><p>Модель проходит по чек-листу и отмечает, где не так.</p><p class="who">Человек смотрит отмеченные пункты</p></div>
+<div class="card task"><h3>Сводка для руководителя</h3><p>Модель раз в неделю пишет, что сделано и что просрочено.</p><p class="who">Человек читает за минуту вместо совещания</p></div>
+<div class="card task"><h3>Поиск по документам</h3><p>Модель находит ответ во внутренних документах и показывает, откуда он.</p><p class="who">Человек проверяет источник</p></div>
+</div>
+<p>Везде простая задача, понятный образец и человек на выходе. Возьмите любую из шести, прикиньте, сколько часов в неделю она съедает у вашего отдела, и начните с нее.</p>
+</section>
+
+<section id="pilot">
+<p class="eyebrow">11</p>
+<h2>Пилот за две недели</h2>
+<ol class="days">
+<li><span>Дни 1-2</span><p>Выбрать задачу, описать процесс и запреты, назначить ответственного</p></li>
+<li><span>Дни 3-4</span><p>Собрать 20-30 настоящих примеров с правильными ответами</p></li>
+<li><span>Дни 5-7</span><p>Собрать харнес у себя. Одна база знаний, одна роль, один список задач и журнал</p></li>
+<li><span>Дни 8-12</span><p>Агент работает в тени, человек проверяет каждый результат</p></li>
+<li><span>Дни 13-14</span><p>Прогнать примеры на второй модели и решить, расширять, чинить или закрывать</p></li>
+</ol>
+<div class="grid">
+<div class="card"><h3>Какую задачу брать</h3><ul class="dots"><li>частую и повторяемую</li><li>с понятным входом и выходом</li><li>ту, что болит</li></ul></div>
+<div class="card hot"><h3>Что не брать</h3><ul class="dots"><li>где ошибка стоит дорого</li><li>где нет данных</li></ul></div>
+</div>
+<p>Пример. Вы выбрали ответы на типовые обращения. В первые два дня описываете, какие обращения бывают, кто за них отвечает и чего нельзя писать ни в коем случае. Потом берете двадцать прошлых обращений и одобренные ответы. Настраиваете агента, он читает регламент и пишет черновики. Неделю специалист сравнивает черновик агента со своим ответом. В конце прогоняете те же двадцать примеров на другой модели. Если обе справляются, у вас пилот, который не зависит от одного поставщика.</p>
+<p>Главный риск не технический. Пилот живет, пока у него есть хозяин и место в реальном процессе.</p>
+</section>
+
+<section id="links">
+<p class="eyebrow">12</p>
+<h2>Записи эфиров и ссылки</h2>
+<p>Примеры из доклада разбирались на открытых эфирах Research Mastermind, где практики показывают, как у них работают ИИ-агенты.</p>
+<ul class="links">
+<li><a href="https://www.youtube.com/watch?v=QkL4yfsNaOA">Эфир 28 октября</a><small>свой харнес, бесплатные модели, BB как диспетчер</small></li>
+<li><a href="https://www.youtube.com/watch?v=G4E4eHd-Hg4">Эфир 30 сентября</a><small>BB на практике</small></li>
+<li><a href="https://www.youtube.com/watch?v=XCT7a3SoAQk">Эфир 15 июля</a><small>команды агентов и платформы</small></li>
+<li><a href="https://github.com/get-bb/bb">BB</a><small>github.com/get-bb/bb, MIT</small></li>
+<li><a href="https://github.com/paperclipai/paperclip">Paperclip</a><small>github.com/paperclipai/paperclip, MIT</small></li>
+<li><a href="https://github.com/multica-ai/multica">Мультика</a><small>github.com/multica-ai/multica, своя лицензия</small></li>
+<li><a href="https://epoch.ai/data-insights/open-closed-eci-gap">Epoch AI</a><small>насколько открытые модели отстают от закрытых</small></li>
+</ul>
+</section>
+
+<footer>
+<p class="eyebrow">Связаться</p>
+<a class="tg" href="https://t.me/artem_subbotin">@artem_subbotin</a>
+<p>Артем Субботин в Telegram. Пишите, если хотите обсудить пилот у себя или задать вопрос, который не успели задать после доклада.</p>
+</footer>
+
+</div>
+</body>
+</html>
